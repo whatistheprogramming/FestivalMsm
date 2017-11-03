@@ -61,7 +61,9 @@ public class FestivalSecond extends AppCompatActivity
             @Override
             public void onClick(View v)
             {
-                //TODO
+                //跳转到发送短信界面，因为是自定义短信内容，所以这里短信id传入-1
+                SendMessageActivity.toActivity(FestivalSecond.this, mFestivalId, -1);
+
             }
         });
     }
@@ -75,7 +77,7 @@ public class FestivalSecond extends AppCompatActivity
         mAdapter=new ArrayAdapter<Msg>(this, -1, FestivalLab.getInstance().getMsgsByFestivalId(mFestivalId)){
             @NonNull
             @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent)
+            public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent)
             {
                 if (convertView == null)
                 {
@@ -90,7 +92,9 @@ public class FestivalSecond extends AppCompatActivity
                     @Override
                     public void onClick(View v)
                     {
-                        //TODO
+                        //跳转到发送短信界面
+                        SendMessageActivity.toActivity(FestivalSecond.this, mFestivalId, getItem(position).getId());
+
                     }
                 });
                 return convertView;
