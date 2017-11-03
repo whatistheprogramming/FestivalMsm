@@ -1,5 +1,6 @@
 package com.example.yuan.demofestivalmsm.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,11 +15,13 @@ import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.TextView;
 
+import com.example.yuan.demofestivalmsm.FestivalSecond;
 import com.example.yuan.demofestivalmsm.R;
 import com.example.yuan.demofestivalmsm.bean.Festival;
 import com.example.yuan.demofestivalmsm.bean.FestivalLab;
 
 /**
+ * 第一个界面
  * Created by yuan on 2017/11/3.
  */
 
@@ -29,6 +32,7 @@ public class FestivalFragment extends Fragment
     private ArrayAdapter<Festival> mAdapter;
 
     private LayoutInflater mInflater;
+
 
     @Nullable
     @Override
@@ -69,7 +73,10 @@ public class FestivalFragment extends Fragment
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id)
             {
-                //TODO
+                Intent intent = new Intent(getActivity(), FestivalSecond.class);
+                //跳转到第二个界面时传入节日的id
+                intent.putExtra("festival_id", mAdapter.getItem(position).getId());
+                startActivity(intent);
             }
         });
 

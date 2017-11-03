@@ -16,7 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".FestivalFirst">
+        <activity android:name=".FestivalSecond">
         </activity>
     </application>
 
