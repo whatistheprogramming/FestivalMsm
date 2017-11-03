@@ -35,7 +35,8 @@
         <com.example.yuan.demofestivalmsm.view.FlowLayout
             android:id="@+id/fl_contacts"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:padding="10dp">
 
         </com.example.yuan.demofestivalmsm.view.FlowLayout>
 
