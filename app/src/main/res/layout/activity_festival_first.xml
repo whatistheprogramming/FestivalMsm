@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--第一个界面，短信祝福的布局-->
+<GridView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/grid_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:numColumns="3"
+    android:padding="16dp"
+    android:verticalSpacing="15dp"
+    android:horizontalSpacing="10dp"
+    >
+
+    <!--
+    android:numColumns="3" 表示每行显示3列
+    android:verticalSpacing="15dp"
+    android:horizontalSpacing="10dp" 设置水平和垂直的间隙
+
+    -->
+
+</GridView>
+
