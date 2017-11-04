@@ -1,8 +1,11 @@
 package com.example.yuan.demofestivalmsm;
 
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -16,10 +19,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.yuan.demofestivalmsm.bean.Festival;
 import com.example.yuan.demofestivalmsm.bean.FestivalLab;
 import com.example.yuan.demofestivalmsm.bean.Msg;
+import com.example.yuan.demofestivalmsm.biz.SmsBiz;
 import com.example.yuan.demofestivalmsm.view.FlowLayout;
 
 import java.util.HashSet;
@@ -56,6 +61,24 @@ public class SendMessageActivity extends AppCompatActivity
 
     private LayoutInflater mInflater;
 
+    public static final String ACTION_SEND_MAG = "ACTION_SEND_MAG";
+    public static final String ACTION_DELIVER_MAG = "ACTION_DELIVER_MAG";
+
+    private PendingIntent mSendPi;
+    private PendingIntent mDeliverPi;
+
+    //监听短信发送状态的广播
+    private BroadcastReceiver mSendBroadcastReceiver;
+    private BroadcastReceiver mDeliverBroadcastReceiver;
+
+    private SmsBiz mSmsBiz = new SmsBiz();
+
+    //记录已经成功发送出的短信数量
+    private int mMsgSendCount;
+    //记录总共发送出的短信数量
+    private int mMsgTotalCount;
+
+
 
 
     @Override
@@ -74,6 +97,62 @@ public class SendMessageActivity extends AppCompatActivity
 
         //事件的初始化
         initEvent();
+
+        initRecivers();
+    }
+
+    private void initRecivers()
+    {
+        Intent sendIntent = new Intent(ACTION_SEND_MAG);
+        Intent deliverIntent = new Intent(ACTION_SEND_MAG);
+        mSendPi = PendingIntent.getBroadcast(this, 0, sendIntent, 0);
+        mDeliverPi = PendingIntent.getBroadcast(this, 0, deliverIntent, 0);
+
+        mSendBroadcastReceiver= new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                mMsgSendCount++;
+                if (getResultCode() == RESULT_OK)
+                {
+                    Log.d("TAG", "短信发送成功" + mMsgSendCount + "/" + mMsgTotalCount);
+                }
+                else
+                {
+                    Log.d("TAG", "短信发送失败");
+                }
+                Toast.makeText(context, "短信发送成功" + mMsgSendCount + "/" + mMsgTotalCount, Toast.LENGTH_SHORT).show();
+                //如果所有的短信都成功发送了，就关闭当前的界面
+                if (mMsgSendCount == mMsgTotalCount)
+                {
+                    finish();
+                }
+
+            }
+        };
+        registerReceiver(mSendBroadcastReceiver, new IntentFilter(ACTION_SEND_MAG));
+
+        mDeliverBroadcastReceiver=new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                Log.d("TAG", "联系人已经成功接收到我们的短信");
+            }
+        };
+        registerReceiver(mDeliverBroadcastReceiver, new IntentFilter(ACTION_DELIVER_MAG));
+
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        //释放资源
+        unregisterReceiver(mSendBroadcastReceiver);
+        unregisterReceiver(mDeliverBroadcastReceiver);
+
     }
 
     private void initEvent()
@@ -88,6 +167,35 @@ public class SendMessageActivity extends AppCompatActivity
                 startActivityForResult(intent,CODE_RESULT);
             }
         });
+
+
+        //fab发送短信按钮
+        mFabSend.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                //如果没有号码
+                if (mContactNumber.size() == 0)
+                {
+                    Toast.makeText(SendMessageActivity.this, "请先选择联系人", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                String msg = mEditText.getText().toString();
+                if (TextUtils.isEmpty(msg))
+                {
+                    Toast.makeText(SendMessageActivity.this, "短信内容不能为空", Toast.LENGTH_SHORT).show();
+                    return ;
+                }
+                //显示加载进度条
+                mLayoutLoading.setVisibility(View.VISIBLE);
+                //发送短信并返回短信数量
+                mMsgTotalCount = mSmsBiz.sendMsg(mContactNumber, msg, mSendPi, mDeliverPi);
+                mMsgSendCount = 0;
+
+            }
+        });
+
     }
 
     /**
@@ -110,6 +218,7 @@ public class SendMessageActivity extends AppCompatActivity
 
                     //联系人的号码
                     String number = getContactNumber(cursor);
+                    //.TextUtils.isEmpty(CharSequence str)这个方法是系统为我们提供的一个非常方便的判断一个CharSequence类型的,参数是否为空的方法，这个方法的返回值是一个boolean，当括号内参数为（null）或者（""）时，返回true。
                     if (!TextUtils.isEmpty(number))
                     {
                         mContactNumber.add(number);
@@ -157,6 +266,7 @@ public class SendMessageActivity extends AppCompatActivity
 
     private void initData()
     {
+        //defaultValue为想要获取的参数没有传递过来的时候，返回defaultValue这个值。
         mFestivalId = getIntent().getIntExtra("festival_id", -1);
         msgId = getIntent().getIntExtra("msg_id", -1);
 
